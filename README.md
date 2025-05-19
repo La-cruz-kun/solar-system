@@ -1,6 +1,6 @@
 # Solar System Simulator
 
-![Solar System Demo](.screenshots/Screenshot.png) <!-- Replace with actual screenshot path -->
+![Solar System Demo](screenshot/Screenshot.png) <!-- Replace with actual screenshot path -->
 
 A 3D solar system simulation built with OpenGL (C)
 
