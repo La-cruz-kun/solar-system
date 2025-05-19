@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "include/glad/glad.h"
 
 #include <GLFW/glfw3.h>
 #include <math.h>
@@ -39,8 +39,8 @@ struct PlanetData {
     float shininess;
     vec3 orbit_position;
     float rotation_speed;
-		float orbital_speed;
-		float size;
+	float orbital_speed;
+	float size;
 } planets[9];
 
 
@@ -60,9 +60,9 @@ void planets_setup();
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLuint create_sphere_vao_ebo(float radius, int slices, int stacks, int *index_count_out);
 void generate_sphere_indexed(
-    float radius, int slices, int stacks,
-    Vertex **vertices_out, int *vertex_count_out,
-    GLuint **indices_out, int *index_count_out);
+float radius, int slices, int stacks,
+Vertex **vertices_out, int *vertex_count_out,
+GLuint **indices_out, int *index_count_out);
 unsigned int create_circle(float r, int s, int *index);
 
 
@@ -112,138 +112,138 @@ int main() {
 
     Shader PlanetShader = {"shaders/planet_vertex.glsl", "shaders/planet_fragment.glsl", 0};
     Shader SunShader = {"shaders/sun_vertex.glsl", "shaders/sun_fragment.glsl", 0};
-		Shader OrbitShader = {"shaders/line_vert.glsl", "shaders/line_frag.glsl", 0};
-		Shader BackgroundShader = {"shaders/background_vert.glsl", "shaders/background_frag.glsl", 0};
+    Shader OrbitShader = {"shaders/line_vert.glsl", "shaders/line_frag.glsl", 0};
+    Shader BackgroundShader = {"shaders/background_vert.glsl", "shaders/background_frag.glsl", 0};
     ShaderInit(&PlanetShader);
     ShaderInit(&SunShader);
-		ShaderInit(&OrbitShader);
-		ShaderInit(&BackgroundShader);
+    ShaderInit(&OrbitShader);
+    ShaderInit(&BackgroundShader);
 
-		TextureData SunData = {loadTexture("resources/2k_sun.jpg"), 0};
-		unsigned int BackgroundTexture = loadTexture("resources/8k_stars_milky_way.jpg");
+    TextureData SunData = {loadTexture("resources/2k_sun.jpg"), 0};
+    unsigned int BackgroundTexture = loadTexture("resources/8k_stars_milky_way.jpg");
 
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-		mat4 view;
+    mat4 view;
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
     glm_perspective(glm_rad(45.0), (float)WINDOWWIDTH / (float)WINDOWHEIGHT, 0.1f,
                   1000.0f, projection);
 
 
     glfwSetCursorPosCallback(window, mouse_callback);
-		glfwSetKeyCallback(window, keyboard_callback);
+    glfwSetKeyCallback(window, keyboard_callback);
 
 
     vec3 lightColor = {1, 1, 1};
 
 
-		int segment = 32;
-		int sun_index_count = 0;
-		unsigned int SunVAO = create_sphere_vao_ebo(1, segment, segment, &sun_index_count);
-		int circle_index = 0;
-		int sphere_index_count = 0;
-		unsigned int SphereVAO = create_sphere_vao_ebo(1, segment, segment, &sphere_index_count);
-		int background_index_count = 0;
-		unsigned int BackgroundVAO = create_sphere_vao_ebo(1, 8, 8, &background_index_count);
-		planets_setup();
-		state = 1;
-		float previous_orbital_position[9][3];
+    int segment = 32;
+    int sun_index_count = 0;
+    unsigned int SunVAO = create_sphere_vao_ebo(1, segment, segment, &sun_index_count);
+    int circle_index = 0;
+    int sphere_index_count = 0;
+    unsigned int SphereVAO = create_sphere_vao_ebo(1, segment, segment, &sphere_index_count);
+    int background_index_count = 0;
+    unsigned int BackgroundVAO = create_sphere_vao_ebo(1, 8, 8, &background_index_count);
+    planets_setup();
+    state = 1;
+    float previous_orbital_position[9][3];
 		
 		
     ShaderUse(PlanetShader);
     glUniform1i(glGetUniformLocation(PlanetShader.ID, "material.diffuse"), 0);
     glUniform1i(glGetUniformLocation(PlanetShader.ID, "material.specular"), 1);
-		ShaderUse(SunShader);
+    ShaderUse(SunShader);
     glUniform1i(glGetUniformLocation(SunShader.ID, "diffuse"), 0);
-		ShaderUse(BackgroundShader);
+    ShaderUse(BackgroundShader);
     glUniform1i(glGetUniformLocation(BackgroundShader.ID, "equirectangularMap"), 0);
 
 
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
-				if (state & (1 << 0)) {
-					animation_time += deltaTime;
-				}
-				if (state & (1 << 1)) {
-					rotation_time += deltaTime;
-				}
+        if (state & (1 << 0)) {
+            animation_time += deltaTime;
+        }
+        if (state & (1 << 1)) {
+            rotation_time += deltaTime;
+        }
         lastFrame = currentFrame;
         processInput(window);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				glClearColor(1, 0,0,1);
+        glClearColor(1, 0,0,1);
 
-				glDisable(GL_DEPTH_TEST);
-				glDepthMask(GL_FALSE);
-				ShaderUse(BackgroundShader);
-				GetViewMatrix(&camera, view);
-				view[3][0] = view[3][1] = view[3][2] = 0.0f;
-				glUniformMatrix4fv(glGetUniformLocation(BackgroundShader.ID, "view"), 1, GL_FALSE, &view[0][0]);
-				glUniformMatrix4fv(glGetUniformLocation(BackgroundShader.ID, "projection"), 1, GL_FALSE, &projection[0][0]);
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        ShaderUse(BackgroundShader);
+        GetViewMatrix(&camera, view);
+        view[3][0] = view[3][1] = view[3][2] = 0.0f;
+        glUniformMatrix4fv(glGetUniformLocation(BackgroundShader.ID, "view"), 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(BackgroundShader.ID, "projection"), 1, GL_FALSE, &projection[0][0]);
 
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, BackgroundTexture);
-				glBindVertexArray(BackgroundVAO);
-				glDrawElements(GL_TRIANGLES, background_index_count, GL_UNSIGNED_INT, (void *)0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, BackgroundTexture);
+        glBindVertexArray(BackgroundVAO);
+        glDrawElements(GL_TRIANGLES, background_index_count, GL_UNSIGNED_INT, (void *)0);
 
-				glDepthMask(GL_TRUE); // Re-enable depth writing
-				glEnable(GL_DEPTH_TEST);
-															
-				ShaderUse(PlanetShader);
-				GetViewMatrix(&camera, view);
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "viewPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.position"), lightPosition[0], lightPosition[1], lightPosition[2]);
+        glDepthMask(GL_TRUE); // Re-enable depth writing
+        glEnable(GL_DEPTH_TEST);
+                                                    
+        ShaderUse(PlanetShader);
+        GetViewMatrix(&camera, view);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "viewPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.position"), lightPosition[0], lightPosition[1], lightPosition[2]);
 
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.ambient"), 0.2, 0.2, 0.2);
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.diffuse"), 0.5, 0.5, 0.5);
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.specular"), 1.0, 1.0, 1.0);
-				glUniform3f(glGetUniformLocation(PlanetShader.ID, "material.specular"), 0.5, 0.5, 0.5);
-				glUniform1f(glGetUniformLocation(PlanetShader.ID, "material.shininess"), 64);
-				glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "view"), 1, GL_FALSE,
-													 &view[0][0]);
-				glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "projection"), 1,
-													 GL_FALSE, &projection[0][0]);
-
-
-			  for (int j = 0; j < 8; j++) {	
-					ShaderUse(PlanetShader);
-					// Render Planets
-					glm_mat4_identity(model);
-					previous_orbital_position[j][0] = planets[j].orbit_position[0] * sin(animation_time * planets[j].orbital_speed);
-					previous_orbital_position[j][1] = 0;
-					previous_orbital_position[j][2] = planets[j].orbit_position[0] * cos(animation_time * planets[j].orbital_speed);
-					glm_translate(model, (vec3) {
-							previous_orbital_position[j][0], 
-							1, 
-							previous_orbital_position[j][2]
-							});
-					glm_scale(model, (vec3) {planets[j].size, planets[j].size, planets[j].size} );
-					glm_rotate(model, planets[j].rotation_speed * rotation_time, (vec3) {0, 1, 0}); 
-					glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, planets[j].diffuse);
-					glBindVertexArray(SphereVAO);
-					glDrawElements(GL_TRIANGLES, sphere_index_count, GL_UNSIGNED_INT, (void *)0);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.ambient"), 0.2, 0.2, 0.2);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.diffuse"), 0.5, 0.5, 0.5);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "light.specular"), 1.0, 1.0, 1.0);
+        glUniform3f(glGetUniformLocation(PlanetShader.ID, "material.specular"), 0.5, 0.5, 0.5);
+        glUniform1f(glGetUniformLocation(PlanetShader.ID, "material.shininess"), 64);
+        glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "view"), 1, GL_FALSE,
+                                             &view[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "projection"), 1,
+                                             GL_FALSE, &projection[0][0]);
 
 
-					ShaderUse(OrbitShader);
-					unsigned int CircleVAO = create_circle(max(planets[j].orbit_position[0], planets[j].orbit_position[2]), 128, &circle_index);
-					glm_mat4_identity(model);
-					glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "view"), 1, GL_FALSE,
-														 &view[0][0]);
-					glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "projection"), 1,
-														 GL_FALSE, &projection[0][0]);
-					glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "model"), 1, GL_FALSE,
-									 &model[0][0]);
-					glBindVertexArray(CircleVAO);
-					glDrawElements(GL_LINE_LOOP, circle_index, GL_UNSIGNED_INT, (void *)0);
-				}
+        for (int j = 0; j < 8; j++) {	
+            ShaderUse(PlanetShader);
+            // Render Planets
+            glm_mat4_identity(model);
+            previous_orbital_position[j][0] = planets[j].orbit_position[0] * sin(animation_time * planets[j].orbital_speed);
+            previous_orbital_position[j][1] = 0;
+            previous_orbital_position[j][2] = planets[j].orbit_position[0] * cos(animation_time * planets[j].orbital_speed);
+            glm_translate(model, (vec3) {
+                    previous_orbital_position[j][0], 
+                    1, 
+                    previous_orbital_position[j][2]
+                        });
+            glm_scale(model, (vec3) {planets[j].size, planets[j].size, planets[j].size} );
+            glm_rotate(model, planets[j].rotation_speed * rotation_time, (vec3) {0, 1, 0}); 
+            glUniformMatrix4fv(glGetUniformLocation(PlanetShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, planets[j].diffuse);
+            glBindVertexArray(SphereVAO);
+            glDrawElements(GL_TRIANGLES, sphere_index_count, GL_UNSIGNED_INT, (void *)0);
+
+
+            ShaderUse(OrbitShader);
+            unsigned int CircleVAO = create_circle(max(planets[j].orbit_position[0], planets[j].orbit_position[2]), 128, &circle_index);
+            glm_mat4_identity(model);
+            glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "view"), 1, GL_FALSE,
+                                                 &view[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "projection"), 1,
+                                                 GL_FALSE, &projection[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "model"), 1, GL_FALSE,
+                             &model[0][0]);
+            glBindVertexArray(CircleVAO);
+            glDrawElements(GL_LINE_LOOP, circle_index, GL_UNSIGNED_INT, (void *)0);
+        }
 
         // render Sun
         ShaderUse(SunShader);
         glm_mat4_identity(model);
         glm_translate(model, lightPosition);
-				glm_scale(model, (vec3) {10, 10, 10});
+        glm_scale(model, (vec3) {10, 10, 10});
         glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "view"), 1, GL_FALSE,
                            &view[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "projection"), 1,
@@ -252,10 +252,10 @@ int main() {
 
         glUniformMatrix4fv(glGetUniformLocation(SunShader.ID, "model"), 1, GL_FALSE,
                  &model[0][0]);
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, SunData.diffuse_data);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, SunData.diffuse_data);
         glBindVertexArray(SunVAO);
-				glDrawElements(GL_TRIANGLES, sun_index_count, GL_UNSIGNED_INT, (void *)0);
+        glDrawElements(GL_TRIANGLES, sun_index_count, GL_UNSIGNED_INT, (void *)0);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
