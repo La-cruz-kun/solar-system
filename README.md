@@ -1,6 +1,6 @@
 # Solar System Simulator
 
-![Solar System Demo](screenshots/Screenshot.png) <!-- Replace with actual screenshot path -->
+![Solar System Demo](.screenshots/Screenshot.png) <!-- Replace with actual screenshot path -->
 
 A 3D solar system simulation built with OpenGL (C)
 
@@ -26,7 +26,7 @@ A 3D solar system simulation built with OpenGL (C)
 On Linux (only linux support for now)
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/opengl-solar-system.git
+git clone https://github.com/La-cruz-kun/opengl-solar-system.git
 cd opengl-solar-system
 
 # compile
